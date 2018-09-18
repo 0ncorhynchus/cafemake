@@ -17,18 +17,8 @@ use ::core::*;
 const DEFAULT_INPUT_FILE: &str = "cafemake.toml";
 const DEFAULT_OUTPUT_FILE: &str = "build.ninja";
 
-fn main() -> std::io::Result<()> {
-    let contents = {
-        let mut f = File::open(DEFAULT_INPUT_FILE)?;
-        let mut c = String::new();
-        f.read_to_string(&mut c)?;
-        c
-    };
-
-    let config: Config = match toml::from_str(&contents) {
-        Ok(config) => config,
-        Err(e) => { panic!(e.to_string()) },
-    };
+fn main() -> std::result::Result<(), config::ConfigError> {
+    let config = Config::load(DEFAULT_INPUT_FILE)?;
 
     let mut f = File::create(DEFAULT_OUTPUT_FILE)?;
 
