@@ -1,0 +1,3 @@
+[[target.exe]]
+name = "cafemol"
+sources = ["main.f90", "myconst.f90"]

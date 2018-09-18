@@ -1,5 +1,8 @@
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
 extern crate getopts;
 extern crate toml;
 
@@ -33,7 +36,7 @@ fn main() -> std::io::Result<()> {
     writeln!(&mut f, "fflags = -cpp -DTIME -ffree-line-length-none -fbounds-check -fno-range-check");
     write_rule(&mut f, "mod", "touch -c $out");
     write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
-    write_rule(&mut f, "link", "$fc -o $out -Wl,-start-group $in $libs -Wl,-end-group");
+    write_rule(&mut f, "link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group");
 
     let mut sources = Vec::new();
 
