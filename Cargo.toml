@@ -1,0 +1,10 @@
+[package]
+name = "cafemake"
+version = "0.1.0"
+authors = ["Suguru Kato <salmon.bioinformatics@gmail.com>"]
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+getopts = "0.2"
+toml = "0.4"
