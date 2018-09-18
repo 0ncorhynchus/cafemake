@@ -32,8 +32,11 @@ fn main() -> std::io::Result<()> {
 
     let mut f = File::create(DEFAULT_OUTPUT_FILE)?;
 
-    writeln!(&mut f, "fc = gfortran");
-    writeln!(&mut f, "fflags = -cpp -DTIME -ffree-line-length-none -fbounds-check -fno-range-check");
+    writeln!(&mut f, "fc = {}",
+             config.system.compiler.unwrap_or("gfortran".to_string()));
+    writeln!(&mut f, "fflags = {}",
+             config.system.fflags.unwrap_or("".to_string()));
+
     write_rule(&mut f, "mod", "touch -c $out");
     write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
     write_rule(&mut f, "link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group");

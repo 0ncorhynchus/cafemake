@@ -1,3 +1,7 @@
+[system]
+compiler = "gfortran"
+fflags = "-cpp -DTIME -ffree-line-length-none -fbounds-check -fno-range-check"
+
 [[target.exe]]
 name = "cafemol"
 sources = ["main.f90", "myconst.f90"]
