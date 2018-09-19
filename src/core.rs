@@ -24,7 +24,7 @@ impl Rule {
 }
 
 #[derive(Debug)]
-pub struct Build {
+pub struct BuildSystem {
     pub compiles: Vec<Compile>,
     pub links: Vec<Link>,
 }
@@ -40,7 +40,7 @@ pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
     Ok(paths)
 }
 
-impl Build {
+impl BuildSystem {
     pub fn from_config(config: &Config) -> io::Result<Self> {
         let mut sources = HashSet::new();
         let mut links = Vec::new();
@@ -64,7 +64,7 @@ impl Build {
             compiles.push(Compile::analyze(src)?);
         }
 
-        Ok(Build {
+        Ok(BuildSystem {
             compiles: compiles,
             links: links,
         })

@@ -50,7 +50,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
         write_rule(&mut f, rule);
     }
 
-    let build = Build::from_config(&config)?;
+    let build = BuildSystem::from_config(&config)?;
 
     for link in &build.links {
         write_link(&mut f, link);
