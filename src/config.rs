@@ -1,8 +1,8 @@
-use std::io::{self, Read};
-use std::fs::File;
-use std::str::FromStr;
-use std::fmt;
 use std::error::Error;
+use std::fmt;
+use std::fs::File;
+use std::io::{self, Read};
+use std::str::FromStr;
 use toml;
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ConfigError::TOML(err) => write!(f, "{}", err),
-            ConfigError::IO(err)   => write!(f, "{}", err),
+            ConfigError::IO(err) => write!(f, "{}", err),
         }
     }
 }
@@ -36,14 +36,14 @@ impl Error for ConfigError {
     fn description(&self) -> &str {
         match self {
             ConfigError::TOML(ref err) => err.description(),
-            ConfigError::IO(ref err)   => err.description(),
+            ConfigError::IO(ref err) => err.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
         match self {
             ConfigError::TOML(ref err) => Some(err),
-            ConfigError::IO(ref err)   => Some(err),
+            ConfigError::IO(ref err) => Some(err),
         }
     }
 }

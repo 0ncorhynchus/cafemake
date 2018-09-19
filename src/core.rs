@@ -1,18 +1,18 @@
+use regex::Regex;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
-use regex::Regex;
 
 #[derive(Debug)]
 pub struct Rule {
     pub name: String,
-    pub command: String
+    pub command: String,
 }
 
 impl Rule {
     pub fn new(name: &str, command: &str) -> Self {
         Rule {
-            name:    name.to_string(),
+            name: name.to_string(),
             command: command.to_string(),
         }
     }
@@ -50,7 +50,7 @@ impl Dependency {
 
         Ok(Dependency {
             modules: modules,
-            uses: uses
+            uses: uses,
         })
     }
 }
@@ -70,11 +70,12 @@ pub fn write_rule<W: Write>(f: &mut W, rule: &Rule) {
 }
 
 pub fn write_exec<W: Write>(f: &mut W, name: &str, objs: &Vec<String>) {
-    writeln!(f, "build {0}: link {1}", name,
-             objs.iter()
-                 .map(get_objname)
-                 .collect::<Vec<_>>()
-                 .join(" "));
+    writeln!(
+        f,
+        "build {0}: link {1}",
+        name,
+        objs.iter().map(get_objname).collect::<Vec<_>>().join(" ")
+    );
 }
 
 pub fn write_source<W: Write>(f: &mut W, src: &String) {
@@ -83,11 +84,16 @@ pub fn write_source<W: Write>(f: &mut W, src: &String) {
 
     write!(f, "build {0}: fc {1}", obj, src);
     if dependency.uses.len() != 0 {
-        write!(f, " | {}",
-               dependency.uses.iter()
-                              .map(|x| format!("{}.mod", x))
-                              .collect::<Vec<_>>()
-                              .join(" "));
+        write!(
+            f,
+            " | {}",
+            dependency
+                .uses
+                .iter()
+                .map(|x| format!("{}.mod", x))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
     }
     writeln!(f);
 
