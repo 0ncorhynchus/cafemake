@@ -14,21 +14,9 @@ use config::*;
 use core::*;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
 
 const DEFAULT_INPUT_FILE: &str = "cafemake.toml";
 const DEFAULT_OUTPUT_FILE: &str = "build.ninja";
-
-fn glob_files(s: &String) -> std::result::Result<Vec<PathBuf>, glob::PatternError> {
-    let mut paths = Vec::new();
-    for entry in glob::glob(s)? {
-        match entry {
-            Ok(path) => paths.push(path),
-            Err(err) => println!("{:?}", err),
-        }
-    }
-    Ok(paths)
-}
 
 fn main() -> std::result::Result<(), config::ConfigError> {
     let config = Config::load(DEFAULT_INPUT_FILE)?;
@@ -38,12 +26,16 @@ fn main() -> std::result::Result<(), config::ConfigError> {
     writeln!(
         &mut f,
         "fc = {}",
-        config.system.compiler.unwrap_or("gfortran".to_string())
+        config
+            .system
+            .compiler
+            .clone()
+            .unwrap_or("gfortran".to_string())
     );
     writeln!(
         &mut f,
         "fflags = {}",
-        config.system.fflags.unwrap_or("".to_string())
+        config.system.fflags.clone().unwrap_or("".to_string())
     );
 
     let rules = vec![
@@ -58,21 +50,19 @@ fn main() -> std::result::Result<(), config::ConfigError> {
         write_rule(&mut f, rule);
     }
 
-    let mut compiles = Vec::new();
-
-    for exec in config.target.exe {
+    for exec in &config.target.exe {
         let mut src = Vec::new();
-        for s in exec.sources {
+        for s in &exec.sources {
             for path in glob_files(&s).unwrap() {
-                let pathstr = path.display().to_string();
-                compiles.push(Compile::analyze(&pathstr)?);
-                src.push(pathstr);
+                src.push(path.display().to_string());
             }
         }
         write_exec(&mut f, &exec.name, &src);
     }
 
-    for compile in compiles {
+    let build = Build::from_config(&config)?;
+
+    for compile in build.compiles {
         write_compile(&mut f, &compile);
     }
 
