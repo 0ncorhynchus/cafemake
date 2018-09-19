@@ -1,6 +1,6 @@
 [system]
 compiler = "gfortran"
-fflags = "-cpp -DTIME -ffree-line-length-none -fbounds-check -fno-range-check"
+fflags = "-Wall"
 
 [[target.exe]]
 name = "cafemol"
