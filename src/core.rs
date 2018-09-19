@@ -19,12 +19,14 @@ impl Rule {
 }
 
 #[derive(Debug)]
-struct Dependency {
+pub struct Compile {
+    pub source: String,
+    pub object: String,
     pub modules: Vec<String>,
     pub uses: Vec<String>,
 }
 
-impl Dependency {
+impl Compile {
     pub fn analyze(source: &str) -> io::Result<Self> {
         lazy_static! {
             static ref mod_re: Regex = Regex::new(r"^\s*module\s+([[:alpha:]][[:word:]]*)")
@@ -40,15 +42,17 @@ impl Dependency {
         for line in reader.lines() {
             let line = line?;
             for cap in mod_re.captures_iter(&line) {
-                modules.push(cap[1].to_string());
+                modules.push(get_modname(&cap[1]));
             }
 
             for cap in use_re.captures_iter(&line) {
-                uses.push(cap[1].to_string());
+                uses.push(get_modname(&cap[1]));
             }
         }
 
-        Ok(Dependency {
+        Ok(Compile {
+            source: source.to_string(),
+            object: get_objname(&source),
             modules: modules,
             uses: uses,
         })
@@ -60,8 +64,12 @@ fn indent(n: usize) -> String {
     " ".repeat(INDENT * n)
 }
 
-fn get_objname(src: &String) -> String {
-    format!("{}.o", src)
+fn get_objname<S: AsRef<str>>(src: &S) -> String {
+    format!("{}.o", src.as_ref())
+}
+
+fn get_modname(name: &str) -> String {
+    format!("{}.mod", name)
 }
 
 pub fn write_rule<W: Write>(f: &mut W, rule: &Rule) {
@@ -78,26 +86,18 @@ pub fn write_exec<W: Write>(f: &mut W, name: &str, objs: &Vec<String>) {
     );
 }
 
-pub fn write_source<W: Write>(f: &mut W, src: &String) {
-    let dependency = Dependency::analyze(src).unwrap();
-    let obj = get_objname(src);
-
-    write!(f, "build {0}: fc {1}", obj, src);
-    if dependency.uses.len() != 0 {
-        write!(
-            f,
-            " | {}",
-            dependency
-                .uses
-                .iter()
-                .map(|x| format!("{}.mod", x))
-                .collect::<Vec<_>>()
-                .join(" ")
-        );
+pub fn write_compile<W: Write>(f: &mut W, compile: &Compile) {
+    write!(f, "build {0}: fc {1}", compile.object, compile.source);
+    if compile.uses.len() != 0 {
+        write!(f, " | {}", compile.uses.join(" "));
     }
     writeln!(f);
 
-    for module in dependency.modules {
-        writeln!(f, "build {0}.mod: mod | {1} {2}", module, src, obj);
+    for module in &compile.modules {
+        writeln!(
+            f,
+            "build {0}: mod | {1} {2}",
+            module, compile.source, compile.object
+        );
     }
 }

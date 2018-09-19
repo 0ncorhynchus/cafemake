@@ -58,21 +58,22 @@ fn main() -> std::result::Result<(), config::ConfigError> {
         write_rule(&mut f, rule);
     }
 
-    let mut sources = Vec::new();
+    let mut compiles = Vec::new();
 
     for exec in config.target.exe {
         let mut src = Vec::new();
         for s in exec.sources {
             for path in glob_files(&s).unwrap() {
-                src.push(path.display().to_string());
+                let pathstr = path.display().to_string();
+                compiles.push(Compile::analyze(&pathstr)?);
+                src.push(pathstr);
             }
         }
         write_exec(&mut f, &exec.name, &src);
-        sources.append(&mut src);
     }
 
-    for src in sources {
-        write_source(&mut f, &src);
+    for compile in compiles {
+        write_compile(&mut f, &compile);
     }
 
     Ok(())
