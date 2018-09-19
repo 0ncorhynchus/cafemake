@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 use regex::Regex;
-use ::config::*;
 
 const INDENT: usize = 2;
 
@@ -19,12 +18,12 @@ pub fn get_objname(src: &String) -> String {
     format!("{}.o", src)
 }
 
-pub fn write_exec<W: Write>(f: &mut W, exec: &Exec) {
-    writeln!(f, "build {0}: link {1}", exec.name,
-             exec.sources.iter()
-                         .map(get_objname)
-                         .collect::<Vec<_>>()
-                         .join(" "));
+pub fn write_exec<W: Write>(f: &mut W, name: &str, objs: &Vec<String>) {
+    writeln!(f, "build {0}: link {1}", name,
+             objs.iter()
+                 .map(get_objname)
+                 .collect::<Vec<_>>()
+                 .join(" "));
 }
 
 pub fn write_source<W: Write>(f: &mut W, src: &String) {

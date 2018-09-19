@@ -4,4 +4,6 @@ fflags = "-cpp -DTIME -ffree-line-length-none -fbounds-check -fno-range-check"
 
 [[target.exe]]
 name = "cafemol"
-sources = ["main.f90", "myconst.f90"]
+sources = ["*.f90"]
+# This is the same with the below line
+# sources = ["main.f90", "myconst.f90"]
