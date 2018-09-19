@@ -34,7 +34,10 @@ impl fmt::Display for ConfigError {
 
 impl Error for ConfigError {
     fn description(&self) -> &str {
-        ""
+        match self {
+            ConfigError::TOML(ref err) => err.description(),
+            ConfigError::IO(ref err)   => err.description(),
+        }
     }
 
     fn cause(&self) -> Option<&Error> {
