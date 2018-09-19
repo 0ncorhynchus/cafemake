@@ -47,15 +47,12 @@ fn main() -> std::result::Result<(), config::ConfigError> {
     let mut sources = Vec::new();
 
     for exec in config.target.exe {
-        let mut src = {
-            let mut src = Vec::new();
-            for s in exec.sources {
-                for path in glob_files(&s).unwrap() {
-                    src.push(path.display().to_string());
-                }
+        let mut src = Vec::new();
+        for s in exec.sources {
+            for path in glob_files(&s).unwrap() {
+                src.push(path.display().to_string());
             }
-            src
-        };
+        }
         write_exec(&mut f, &exec.name, &src);
         sources.append(&mut src);
     }
