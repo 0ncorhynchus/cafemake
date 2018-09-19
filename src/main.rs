@@ -40,9 +40,14 @@ fn main() -> std::result::Result<(), config::ConfigError> {
     writeln!(&mut f, "fflags = {}",
              config.system.fflags.unwrap_or("".to_string()));
 
-    write_rule(&mut f, "mod", "touch -c $out");
-    write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
-    write_rule(&mut f, "link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group");
+    let rules = vec![
+        Rule::new("mod", "touch -c $out"),
+        Rule::new("fc", "$fc $fflags -c -o $out $in"),
+        Rule::new("link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group"),
+    ];
+    for rule in &rules {
+        write_rule(&mut f, rule);
+    }
 
     let mut sources = Vec::new();
 

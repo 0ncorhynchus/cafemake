@@ -9,9 +9,24 @@ pub fn indent(n: usize) -> String {
     " ".repeat(INDENT * n)
 }
 
-pub fn write_rule<W: Write>(f: &mut W, name: &str, command: &str) {
-    writeln!(f, "rule {}", name);
-    writeln!(f, "{}command = {}", indent(1), command);
+#[derive(Debug)]
+pub struct Rule {
+    pub name: String,
+    pub command: String
+}
+
+impl Rule {
+    pub fn new(name: &str, command: &str) -> Self {
+        Rule {
+            name:    name.to_string(),
+            command: command.to_string(),
+        }
+    }
+}
+
+pub fn write_rule<W: Write>(f: &mut W, rule: &Rule) {
+    writeln!(f, "rule {}", rule.name);
+    writeln!(f, "{}command = {}", indent(1), rule.command);
 }
 
 pub fn get_objname(src: &String) -> String {
