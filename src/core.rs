@@ -26,6 +26,7 @@ impl Rule {
 #[derive(Debug)]
 pub struct Build {
     pub compiles: Vec<Compile>,
+    pub links: Vec<Link>,
 }
 
 pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
@@ -42,12 +43,20 @@ pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
 impl Build {
     pub fn from_config(config: &Config) -> io::Result<Self> {
         let mut sources = HashSet::new();
+        let mut links = Vec::new();
         for exec in &config.target.exe {
+            let mut objects = Vec::new();
             for src in &exec.sources {
                 for path in glob_files(src).unwrap() {
-                    sources.insert(path.display().to_string());
+                    let pathstr = path.display().to_string();
+                    objects.push(get_objname(&pathstr));
+                    sources.insert(pathstr);
                 }
             }
+            links.push(Link {
+                product: exec.name.to_string(),
+                objects: objects,
+            });
         }
 
         let mut compiles = Vec::new();
@@ -55,7 +64,10 @@ impl Build {
             compiles.push(Compile::analyze(src)?);
         }
 
-        Ok(Build { compiles: compiles })
+        Ok(Build {
+            compiles: compiles,
+            links: links,
+        })
     }
 }
 
@@ -100,6 +112,12 @@ impl Compile {
     }
 }
 
+#[derive(Debug)]
+pub struct Link {
+    pub product: String,
+    pub objects: Vec<String>,
+}
+
 fn indent(n: usize) -> String {
     static INDENT: usize = 2;
     " ".repeat(INDENT * n)
@@ -118,12 +136,12 @@ pub fn write_rule<W: Write>(f: &mut W, rule: &Rule) {
     writeln!(f, "{}command = {}", indent(1), rule.command);
 }
 
-pub fn write_exec<W: Write>(f: &mut W, name: &str, objs: &Vec<String>) {
+pub fn write_link<W: Write>(f: &mut W, link: &Link) {
     writeln!(
         f,
         "build {0}: link {1}",
-        name,
-        objs.iter().map(get_objname).collect::<Vec<_>>().join(" ")
+        link.product,
+        link.objects.join(" ")
     );
 }
 

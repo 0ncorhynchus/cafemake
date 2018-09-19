@@ -50,20 +50,14 @@ fn main() -> std::result::Result<(), config::ConfigError> {
         write_rule(&mut f, rule);
     }
 
-    for exec in &config.target.exe {
-        let mut src = Vec::new();
-        for s in &exec.sources {
-            for path in glob_files(&s).unwrap() {
-                src.push(path.display().to_string());
-            }
-        }
-        write_exec(&mut f, &exec.name, &src);
-    }
-
     let build = Build::from_config(&config)?;
 
-    for compile in build.compiles {
-        write_compile(&mut f, &compile);
+    for link in &build.links {
+        write_link(&mut f, link);
+    }
+
+    for compile in &build.compiles {
+        write_compile(&mut f, compile);
     }
 
     Ok(())
