@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::result::Result;
 
 #[derive(Debug)]
-pub struct BuildSystem {
+pub struct Build {
     pub variables: Vec<(String, String)>,
     pub compiles: Vec<Compile>,
     pub links: Vec<Link>,
@@ -26,7 +26,7 @@ pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
     Ok(paths)
 }
 
-impl BuildSystem {
+impl Build {
     pub fn from_config(config: &Config) -> io::Result<Self> {
         let variables = vec![
             (
@@ -65,7 +65,7 @@ impl BuildSystem {
             compiles.push(Compile::analyze(src)?);
         }
 
-        Ok(BuildSystem {
+        Ok(Build {
             variables: variables,
             compiles: compiles,
             links: links,

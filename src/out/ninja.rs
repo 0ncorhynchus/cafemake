@@ -6,7 +6,7 @@ fn indent(n: usize) -> String {
     " ".repeat(INDENT * n)
 }
 
-pub fn write_build<W: Write>(mut f: W, build: &BuildSystem) {
+pub fn write_build<W: Write>(mut f: W, build: &Build) {
     for (name, value) in &build.variables {
         writeln!(&mut f, "{0} = {1}", name, value);
     }
