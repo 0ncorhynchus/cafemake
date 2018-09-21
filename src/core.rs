@@ -118,45 +118,10 @@ pub struct Link {
     pub objects: Vec<String>,
 }
 
-fn indent(n: usize) -> String {
-    static INDENT: usize = 2;
-    " ".repeat(INDENT * n)
-}
-
 fn get_objname<S: AsRef<str>>(src: &S) -> String {
     format!("{}.o", src.as_ref())
 }
 
 fn get_modname(name: &str) -> String {
     format!("{}.mod", name)
-}
-
-pub fn write_rule<W: Write>(f: &mut W, rule: &Rule) {
-    writeln!(f, "rule {}", rule.name);
-    writeln!(f, "{}command = {}", indent(1), rule.command);
-}
-
-pub fn write_link<W: Write>(f: &mut W, link: &Link) {
-    writeln!(
-        f,
-        "build {0}: link {1}",
-        link.product,
-        link.objects.join(" ")
-    );
-}
-
-pub fn write_compile<W: Write>(f: &mut W, compile: &Compile) {
-    write!(f, "build {0}: fc {1}", compile.object, compile.source);
-    if compile.uses.len() != 0 {
-        write!(f, " | {}", compile.uses.join(" "));
-    }
-    writeln!(f);
-
-    for module in &compile.modules {
-        writeln!(
-            f,
-            "build {0}: mod | {1} {2}",
-            module, compile.source, compile.object
-        );
-    }
 }

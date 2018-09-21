@@ -9,6 +9,7 @@ extern crate toml;
 
 mod config;
 mod core;
+mod ninja;
 
 use config::*;
 use core::*;
@@ -47,18 +48,12 @@ fn main() -> std::result::Result<(), config::ConfigError> {
         ),
     ];
     for rule in &rules {
-        write_rule(&mut f, rule);
+        ninja::write_rule(&mut f, rule);
     }
 
     let build = BuildSystem::from_config(&config)?;
 
-    for link in &build.links {
-        write_link(&mut f, link);
-    }
-
-    for compile in &build.compiles {
-        write_compile(&mut f, compile);
-    }
+    ninja::write_build(&mut f, &build);
 
     Ok(())
 }
