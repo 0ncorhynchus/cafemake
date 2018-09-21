@@ -9,22 +9,8 @@ use std::path::PathBuf;
 use std::result::Result;
 
 #[derive(Debug)]
-pub struct Rule {
-    pub name: String,
-    pub command: String,
-}
-
-impl Rule {
-    pub fn new(name: &str, command: &str) -> Self {
-        Rule {
-            name: name.to_string(),
-            command: command.to_string(),
-        }
-    }
-}
-
-#[derive(Debug)]
 pub struct BuildSystem {
+    pub variables: Vec<(String, String)>,
     pub compiles: Vec<Compile>,
     pub links: Vec<Link>,
 }
@@ -42,6 +28,21 @@ pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
 
 impl BuildSystem {
     pub fn from_config(config: &Config) -> io::Result<Self> {
+        let variables = vec![
+            (
+                "fc".to_string(),
+                config
+                    .system
+                    .compiler
+                    .clone()
+                    .unwrap_or("gfortran".to_string()),
+            ),
+            (
+                "fflags".to_string(),
+                config.system.fflags.clone().unwrap_or("".to_string()),
+            ),
+        ];
+
         let mut sources = HashSet::new();
         let mut links = Vec::new();
         for exec in &config.target.exe {
@@ -65,6 +66,7 @@ impl BuildSystem {
         }
 
         Ok(BuildSystem {
+            variables: variables,
             compiles: compiles,
             links: links,
         })

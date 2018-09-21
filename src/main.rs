@@ -14,46 +14,16 @@ mod ninja;
 use config::*;
 use core::*;
 use std::fs::File;
-use std::io::prelude::*;
 
 const DEFAULT_INPUT_FILE: &str = "cafemake.toml";
-const DEFAULT_OUTPUT_FILE: &str = "build.ninja";
+// const DEFAULT_OUTPUT_FILE: &str = "build.ninja";
 
 fn main() -> std::result::Result<(), config::ConfigError> {
     let config = Config::load(DEFAULT_INPUT_FILE)?;
 
-    let mut f = File::create(DEFAULT_OUTPUT_FILE)?;
-
-    writeln!(
-        &mut f,
-        "fc = {}",
-        config
-            .system
-            .compiler
-            .clone()
-            .unwrap_or("gfortran".to_string())
-    );
-    writeln!(
-        &mut f,
-        "fflags = {}",
-        config.system.fflags.clone().unwrap_or("".to_string())
-    );
-
-    let rules = vec![
-        Rule::new("mod", "touch -c $out"),
-        Rule::new("fc", "$fc $fflags -c -o $out $in"),
-        Rule::new(
-            "link",
-            "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group",
-        ),
-    ];
-    for rule in &rules {
-        ninja::write_rule(&mut f, rule);
-    }
-
     let build = BuildSystem::from_config(&config)?;
 
-    ninja::write_build(&mut f, &build);
+    ninja::write_build(File::create("build.ninja")?, &build);
 
     Ok(())
 }
