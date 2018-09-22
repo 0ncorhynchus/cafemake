@@ -79,11 +79,19 @@ pub struct System {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Target {
+    pub lib: Option<Vec<Library>>,
     pub exe: Vec<Exec>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Library {
+    pub name: String,
+    pub sources: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Exec {
     pub name: String,
     pub sources: Vec<String>,
+    pub libs: Option<Vec<String>>,
 }

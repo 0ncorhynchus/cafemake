@@ -15,16 +15,17 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
 
     write_rule(&mut f, "mod", "touch -c $out");
     write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
-    write_rule(
-        &mut f,
-        "link",
-        "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group",
-    );
+    write_rule(&mut f, "ar", "$ar ruUc $out $in");
+    write_rule(&mut f, "link", "$fc -o $out $in");
 
     writeln!(&mut f);
 
     for link in &build.links {
         write_link(&mut f, link);
+    }
+
+    for lib in &build.archives {
+        write_archive(&mut f, lib);
     }
 
     for compile in &build.compiles {
@@ -38,11 +39,24 @@ fn write_rule<W: Write>(f: &mut W, name: &str, command: &str) {
 }
 
 fn write_link<W: Write>(f: &mut W, link: &Link) {
-    writeln!(
+    write!(
         f,
         "build {0}: link {1}",
         link.product,
         link.objects.join(" ")
+    );
+    if link.libs.len() > 0 {
+        write!(f, " {0}", link.libs.join(" "));
+    }
+    writeln!(f);
+}
+
+fn write_archive<W: Write>(f: &mut W, archive: &Archive) {
+    writeln!(
+        f,
+        "build {0}: ar {1}",
+        archive.product,
+        archive.objects.join(" ")
     );
 }
 

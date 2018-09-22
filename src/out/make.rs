@@ -18,6 +18,11 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
         products.push(link.product.to_string());
     }
 
+    for lib in &build.archives {
+        write_archive(&mut f, lib);
+        products.push(lib.product.to_string());
+    }
+
     for compile in &build.compiles {
         write_compile(&mut f, compile);
         products.push(compile.object.to_string());
@@ -32,8 +37,17 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
 }
 
 fn write_link<W: Write>(f: &mut W, link: &Link) {
-    writeln!(f, "{}: {}", link.product, link.objects.join(" "));
-    writeln!(f, "\t$(fc) -o $@ $^"); // TODO link libs
+    write!(f, "{}: {}", link.product, link.objects.join(" "));
+    if link.libs.len() > 0 {
+        write!(f, " {}", link.libs.join(" "));
+    }
+    writeln!(f);
+    writeln!(f, "\t$(fc) -o $@ $^");
+}
+
+fn write_archive<W: Write>(f: &mut W, archive: &Archive) {
+    writeln!(f, "{}: {}", archive.product, archive.objects.join(" "));
+    writeln!(f, "\t$(ar) ruUc $@ $^");
 }
 
 fn write_compile<W: Write>(f: &mut W, compile: &Compile) {

@@ -2,6 +2,7 @@ use config::Config;
 use glob;
 use regex::Regex;
 use std::collections::HashSet;
+use std::fmt::Display;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
@@ -12,17 +13,24 @@ use std::result::Result;
 pub struct Build {
     pub variables: Vec<(String, String)>,
     pub compiles: Vec<Compile>,
+    pub archives: Vec<Archive>,
     pub links: Vec<Link>,
 }
 
-pub fn glob_files(s: &String) -> Result<Vec<PathBuf>, glob::PatternError> {
+fn glob_files(patterns: &Vec<String>) -> Result<Vec<PathBuf>, glob::PatternError> {
     let mut paths = Vec::new();
-    for entry in glob::glob(s)? {
-        match entry {
-            Ok(path) => paths.push(path),
-            Err(err) => eprintln!("{:?}", err),
+
+    for pattern in patterns {
+        for entry in glob::glob(pattern)? {
+            match entry {
+                Ok(path) => paths.push(path),
+                Err(err) => {
+                    eprintln!("{}", err);
+                }
+            }
         }
     }
+
     Ok(paths)
 }
 
@@ -41,23 +49,49 @@ impl Build {
                 "fflags".to_string(),
                 config.system.fflags.clone().unwrap_or("".to_string()),
             ),
+            ("ar".to_string(), "ar".to_string()),
         ];
 
         let mut sources = HashSet::new();
         let mut links = Vec::new();
         for exec in &config.target.exe {
             let mut objects = Vec::new();
-            for src in &exec.sources {
-                for path in glob_files(src).unwrap() {
-                    let pathstr = path.display().to_string();
-                    objects.push(get_objname(&pathstr));
-                    sources.insert(pathstr);
-                }
+
+            let libs: Vec<String> = match &exec.libs {
+                Some(libs) => libs.iter().map(get_libname).collect(),
+                None => Vec::new(),
+            };
+
+            for path in glob_files(&exec.sources).unwrap() {
+                let pathstr = path.display().to_string();
+                objects.push(get_objname(&pathstr));
+                sources.insert(pathstr);
             }
+
             links.push(Link {
                 product: exec.name.to_string(),
                 objects: objects,
+                libs: libs,
             });
+        }
+
+        let mut archives = Vec::new();
+        match &config.target.lib {
+            Some(libs) => {
+                for lib in libs {
+                    let mut objects = Vec::new();
+                    for path in glob_files(&lib.sources).unwrap() {
+                        let pathstr = path.display().to_string();
+                        objects.push(get_objname(&pathstr));
+                        sources.insert(pathstr);
+                    }
+                    archives.push(Archive {
+                        product: get_libname(&lib.name),
+                        objects: objects,
+                    });
+                }
+            }
+            None => {}
         }
 
         let mut compiles = Vec::new();
@@ -68,6 +102,7 @@ impl Build {
         Ok(Build {
             variables: variables,
             compiles: compiles,
+            archives: archives,
             links: links,
         })
     }
@@ -133,10 +168,21 @@ impl Compile {
 pub struct Link {
     pub product: String,
     pub objects: Vec<String>,
+    pub libs: Vec<String>,
 }
 
-fn get_objname<S: AsRef<str>>(src: &S) -> String {
-    format!("{}.o", src.as_ref())
+#[derive(Debug)]
+pub struct Archive {
+    pub product: String,
+    pub objects: Vec<String>,
+}
+
+fn get_libname<S: Display>(name: &S) -> String {
+    format!("lib{}.a", name)
+}
+
+fn get_objname<S: Display>(src: &S) -> String {
+    format!("{}.o", src)
 }
 
 fn get_modname(name: &str) -> String {
