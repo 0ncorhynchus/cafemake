@@ -33,7 +33,8 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
 
     writeln!(&mut f, ".PHONY: clean");
     writeln!(&mut f, "clean:");
-    writeln!(&mut f, "\trm -f {}", products.join(" "));
+    writeln!(&mut f, "\t@rm -f {}", products.join(" "));
+    writeln!(&mut f, "\t@echo Cleaning up...");
 }
 
 fn write_link<W: Write>(f: &mut W, link: &Link) {
