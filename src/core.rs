@@ -84,6 +84,9 @@ pub struct Compile {
 impl Compile {
     pub fn analyze(source: &str) -> io::Result<Self> {
         lazy_static! {
+            static ref mod_proc_re: Regex =
+                Regex::new(r"^\s*module\s+procedure\s+([[:alpha:]][[:word:]]*)")
+                    .expect("This error can be a bug. Please report to developers.");
             static ref mod_re: Regex = Regex::new(r"^\s*module\s+([[:alpha:]][[:word:]]*)")
                 .expect("This error can be a bug. Please report to developers.");
             static ref use_re: Regex = Regex::new(r"^\s*use\s+([[:alpha:]][[:word:]]*)")
@@ -94,10 +97,22 @@ impl Compile {
         let mut uses = Vec::new();
 
         let reader = BufReader::new(File::open(source)?);
-        for line in reader.lines() {
-            let line = line?;
-            for cap in mod_re.captures_iter(&line) {
-                modules.push(get_modname(&cap[1]));
+        for (index, line) in reader.lines().enumerate() {
+            let line = match line {
+                Ok(l) => l,
+                Err(err) => {
+                    eprintln!(
+                        "Warning: An Error has occured while reading a line at {}:{}",
+                        source, index
+                    );
+                    eprintln!("  {}", err);
+                    continue;
+                }
+            };
+            if !mod_proc_re.is_match(&line) {
+                for cap in mod_re.captures_iter(&line) {
+                    modules.push(get_modname(&cap[1]));
+                }
             }
 
             for cap in use_re.captures_iter(&line) {
