@@ -16,7 +16,7 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
     write_rule(&mut f, "mod", "touch -c $out");
     write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
     write_rule(&mut f, "ar", "$ar ruUc $out $in");
-    write_rule(&mut f, "link", "$fc -o $out $in");
+    write_rule(&mut f, "link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group");
 
     writeln!(&mut f);
 
@@ -46,9 +46,11 @@ fn write_link<W: Write>(f: &mut W, link: &Link) {
         link.objects.join(" ")
     );
     if link.libs.len() > 0 {
-        write!(f, " {0}", link.libs.join(" "));
+        writeln!(f, "| {0}", link.libs.join(" "));
+        writeln!(f, "{0}libs = {1}", indent(1), link.libs.join(" "));
+    } else {
+        writeln!(f);
     }
-    writeln!(f);
 }
 
 fn write_archive<W: Write>(f: &mut W, archive: &Archive) {

@@ -38,12 +38,18 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
 }
 
 fn write_link<W: Write>(f: &mut W, link: &Link) {
+    let libs = link.libs.join(" ");
     write!(f, "{}: {}", link.product, link.objects.join(" "));
-    if link.libs.len() > 0 {
-        write!(f, " {}", link.libs.join(" "));
+    if libs.len() > 0 {
+        write!(f, " {}", libs);
     }
     writeln!(f);
-    writeln!(f, "\t$(fc) -o $@ $^");
+
+    write!(f, "\t$(fc) -o $@ $<");
+    if libs.len() > 0 {
+        write!(f, " -Wl,-start-group {} -Wl,-end-group", libs);
+    }
+    writeln!(f);
 }
 
 fn write_archive<W: Write>(f: &mut W, archive: &Archive) {
