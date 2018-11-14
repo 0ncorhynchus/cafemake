@@ -16,13 +16,40 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) {
     write_rule(&mut f, "mod", "touch -c $out");
     write_rule(&mut f, "fc", "$fc $fflags -c -o $out $in");
     write_rule(&mut f, "ar", "$ar ruUc $out $in");
-    write_rule(&mut f, "link", "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group");
+    write_rule(
+        &mut f,
+        "link",
+        "$fc -o $out $in -Wl,-start-group $libs -Wl,-end-group",
+    );
+    write_rule(&mut f, "cp", "cp $in $out");
 
     writeln!(&mut f);
 
     for link in &build.links {
         write_link(&mut f, link);
     }
+
+    writeln!(
+        f,
+        "default {}",
+        build
+            .links
+            .iter()
+            .map(|x| x.product.clone())
+            .collect::<Vec<_>>()
+            .join(" ")
+    );
+
+    writeln!(
+        f,
+        "build install: phony {}",
+        build
+            .links
+            .iter()
+            .map(|x| format!("$include_path/bin/{}", x.product))
+            .collect::<Vec<_>>()
+            .join(" ")
+    );
 
     for lib in &build.archives {
         write_archive(&mut f, lib);
@@ -51,6 +78,7 @@ fn write_link<W: Write>(f: &mut W, link: &Link) {
     } else {
         writeln!(f);
     }
+    writeln!(f, "build $include_path/bin/{0}: cp {0}", link.product);
 }
 
 fn write_archive<W: Write>(f: &mut W, archive: &Archive) {
