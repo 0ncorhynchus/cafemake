@@ -1,11 +1,24 @@
+use core::*;
+use std::fs::File;
+use std::io;
 use std::str::FromStr;
 
-pub mod make;
-pub mod ninja;
+mod make;
+mod ninja;
 
 pub enum BuildSystem {
     Ninja,
     Make,
+}
+
+impl BuildSystem {
+    pub fn write_build(&self, build: &Build) -> io::Result<()> {
+        match self {
+            BuildSystem::Ninja => ninja::write_build(File::create("build.ninja")?, build),
+            BuildSystem::Make => make::write_build(File::create("Makefile")?, build),
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug)]

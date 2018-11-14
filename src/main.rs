@@ -14,10 +14,8 @@ mod out;
 use config::*;
 use core::*;
 use std::env;
-use std::fs::File;
 
 const DEFAULT_INPUT_FILE: &str = "cafemake.toml";
-// const DEFAULT_OUTPUT_FILE: &str = "build.ninja";
 
 fn print_usage(program: &str, opts: getopts::Options) {
     let brief = format!("Usage: {} [options]", program);
@@ -50,14 +48,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
 
     let build = Build::from_config(&config)?;
 
-    match build_system {
-        out::BuildSystem::Ninja => {
-            out::ninja::write_build(File::create("build.ninja")?, &build);
-        }
-        out::BuildSystem::Make => {
-            out::make::write_build(File::create("Makefile")?, &build);
-        }
-    }
+    build_system.write_build(&build)?;
 
     Ok(())
 }
