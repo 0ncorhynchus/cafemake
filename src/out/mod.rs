@@ -14,8 +14,8 @@ pub enum BuildSystem {
 impl BuildSystem {
     pub fn write_build(&self, build: &Build) -> io::Result<()> {
         match self {
-            BuildSystem::Ninja => ninja::write_build(File::create("build.ninja")?, build),
-            BuildSystem::Make => make::write_build(File::create("Makefile")?, build),
+            BuildSystem::Ninja => ninja::write_build(File::create("build.ninja")?, build)?,
+            BuildSystem::Make => make::write_build(File::create("Makefile")?, build)?,
         }
         Ok(())
     }
