@@ -11,8 +11,8 @@ mod config;
 mod core;
 mod out;
 
-use config::*;
-use core::*;
+use crate::config::*;
+use crate::core::*;
 use std::env;
 
 const DEFAULT_INPUT_FILE: &str = "cafemake.toml";

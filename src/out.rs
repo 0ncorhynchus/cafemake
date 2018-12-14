@@ -1,4 +1,4 @@
-use core::*;
+use crate::core::*;
 use std::fs::File;
 use std::io;
 use std::str::FromStr;

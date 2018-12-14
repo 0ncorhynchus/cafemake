@@ -1,4 +1,4 @@
-use config::Config;
+use crate::config::Config;
 use glob;
 use regex::Regex;
 use std::collections::HashSet;
