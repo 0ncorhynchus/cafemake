@@ -47,7 +47,7 @@ pub fn write_build<W: Write>(mut f: W, build: &Build) -> io::Result<()> {
         build
             .links
             .iter()
-            .map(|x| format!("$include_path/bin/{}", x.product))
+            .map(|x| format!("$install_prefix/bin/{}", x.product))
             .collect::<Vec<_>>()
             .join(" ")
     )?;
@@ -81,7 +81,7 @@ fn write_link<W: Write>(f: &mut W, link: &Link) -> io::Result<()> {
     } else {
         writeln!(f)?;
     }
-    writeln!(f, "build $include_path/bin/{0}: cp {0}", link.product)?;
+    writeln!(f, "build $install_prefix/bin/{0}: cp {0}", link.product)?;
     Ok(())
 }
 

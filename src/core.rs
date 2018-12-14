@@ -50,7 +50,7 @@ impl Build {
                 config.system.fflags.clone().unwrap_or("".to_string()),
             ),
             ("ar".to_string(), "ar".to_string()),
-            ("include_path".to_string(), "/usr/local".to_string()),
+            ("install_prefix".to_string(), "/usr/local".to_string()),
         ];
 
         let mut sources = HashSet::new();
