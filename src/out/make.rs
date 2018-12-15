@@ -55,10 +55,10 @@ fn write_link<W: Write>(f: &mut W, link: &Link) -> io::Result<()> {
     }
     writeln!(f)?;
 
-    write!(f, "\t$(fc) -o $@ $<")?;
-    if libs.len() > 0 {
-        write!(f, " -Wl,-start-group {} -Wl,-end-group", libs)?;
-    }
+    write!(f, "\t$(fc) -o $@ $^")?;
+    // if libs.len() > 0 {
+    //     write!(f, " -Wl,-start-group {} -Wl,-end-group", libs)?;
+    // }
     writeln!(f)?;
 
     Ok(())
