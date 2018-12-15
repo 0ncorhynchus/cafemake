@@ -1,9 +1,6 @@
+[package]
+name = "print_pi"
+
 [system]
 compiler = "gfortran"
 fflags = "-Wall"
-
-[[target.exe]]
-name = "print_pi"
-sources = ["*.f90"]
-# This is the same with the below line
-# sources = ["main.f90", "myconst.f90"]

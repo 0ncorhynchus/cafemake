@@ -1,6 +1,7 @@
 use crate::core::*;
 use std::fs::File;
 use std::io;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 mod make;
@@ -34,4 +35,12 @@ impl FromStr for BuildSystem {
             _ => Err(ParseBuildSystemError),
         }
     }
+}
+
+fn format_paths(paths: &Vec<PathBuf>) -> String {
+    paths
+        .iter()
+        .map(|path| path.display().to_string())
+        .collect::<Vec<_>>()
+        .join(" ")
 }

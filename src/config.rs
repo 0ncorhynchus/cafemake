@@ -50,8 +50,8 @@ impl Error for ConfigError {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
+    pub package: Package,
     pub system: System,
-    pub target: Target,
 }
 
 impl Config {
@@ -78,20 +78,6 @@ pub struct System {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Target {
-    pub lib: Option<Vec<Library>>,
-    pub exe: Vec<Exec>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Library {
+pub struct Package {
     pub name: String,
-    pub sources: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Exec {
-    pub name: String,
-    pub sources: Vec<String>,
-    pub libs: Option<Vec<String>>,
 }
