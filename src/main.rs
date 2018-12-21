@@ -1,11 +1,7 @@
-#[macro_use]
+#[macro_use(Serialize, Deserialize)]
 extern crate serde_derive;
-#[macro_use]
+#[macro_use(lazy_static)]
 extern crate lazy_static;
-extern crate getopts;
-extern crate glob;
-extern crate regex;
-extern crate toml;
 
 mod config;
 mod core;
@@ -24,7 +20,7 @@ fn print_usage(program: &str, opts: getopts::Options) {
 
 fn main() -> std::result::Result<(), config::ConfigError> {
     let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
+    let program = &args[0];
 
     let mut opts = getopts::Options::new();
     opts.optopt("G", "", "specify the build system", "SYSTEM");
@@ -35,7 +31,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
     };
 
     if matches.opt_present("h") {
-        print_usage(&program, opts);
+        print_usage(program, opts);
         return Ok(());
     }
 
