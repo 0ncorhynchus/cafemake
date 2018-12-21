@@ -9,7 +9,7 @@ extern crate toml;
 
 mod config;
 mod core;
-mod out;
+mod buildsystem;
 
 use crate::config::*;
 use crate::core::*;
@@ -41,7 +41,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
 
     let build_system = match matches.opt_str("G") {
         Some(s) => s.parse().unwrap(),
-        None => out::BuildSystem::Ninja,
+        None => buildsystem::BuildSystem::Ninja,
     };
 
     let config = Config::load(DEFAULT_INPUT_FILE)?;
@@ -49,6 +49,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
     let build = Build::from_config(&config)?;
 
     build_system.write_build(&build)?;
+    build_system.build()?;
 
     Ok(())
 }

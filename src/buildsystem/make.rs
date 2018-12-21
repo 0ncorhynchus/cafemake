@@ -2,8 +2,11 @@ use super::format_paths;
 use crate::core::*;
 use std::io;
 use std::io::prelude::*;
+use std::fs;
 
 pub fn write_build<W: Write>(mut f: W, build: &Build) -> io::Result<()> {
+    fs::create_dir_all(&build.build_dir)?;
+
     writeln!(&mut f, ".SUFFIXES:")?;
     writeln!(&mut f)?;
 

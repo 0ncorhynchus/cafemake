@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::process::Command;
 
 mod make;
 mod ninja;
@@ -18,6 +19,14 @@ impl BuildSystem {
             BuildSystem::Ninja => ninja::write_build(File::create("build.ninja")?, build)?,
             BuildSystem::Make => make::write_build(File::create("Makefile")?, build)?,
         }
+        Ok(())
+    }
+
+    pub fn build(&self) -> io::Result<()> {
+        match self {
+            BuildSystem::Ninja => Command::new("ninja").status()?,
+            BuildSystem::Make => Command::new("make").arg("-j2").status()?,
+        };
         Ok(())
     }
 }

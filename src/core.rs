@@ -12,7 +12,7 @@ pub struct Build {
     pub archives: Vec<Archive>,
     pub links: Vec<Link>,
     pub mod_dir: PathBuf,
-    build_dir: PathBuf,
+    pub build_dir: PathBuf,
     source_dir: PathBuf,
 }
 
