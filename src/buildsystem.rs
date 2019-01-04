@@ -2,8 +2,8 @@ use crate::core::*;
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::process::Command;
+use std::str::FromStr;
 
 mod make;
 mod ninja;

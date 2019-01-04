@@ -3,9 +3,9 @@ extern crate serde_derive;
 #[macro_use(lazy_static)]
 extern crate lazy_static;
 
+mod buildsystem;
 mod config;
 mod core;
-mod buildsystem;
 
 use crate::config::*;
 use crate::core::*;

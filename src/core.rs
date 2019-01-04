@@ -99,7 +99,7 @@ impl Build {
                     eprintln!(
                         "Warning: An Error has occured while reading a line at {}:{}",
                         source.as_ref().display(),
-                        index+1
+                        index + 1
                     );
                     eprintln!("  {}", err);
                     continue;
