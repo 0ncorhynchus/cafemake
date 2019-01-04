@@ -89,11 +89,6 @@ impl Build {
 
     fn resolve_dependencies<P: AsRef<Path>>(&self, source: P) -> io::Result<Compile> {
         lazy_static! {
-            static ref mod_proc_re: Regex =
-                Regex::new(r"^\s*module\s+procedure\s+([[:alpha:]][[:word:]]*)")
-                    .expect("This error can be a bug. Please report to developers.");
-            static ref mod_re: Regex = Regex::new(r"^\s*module\s+([[:alpha:]][[:word:]]*)")
-                .expect("This error can be a bug. Please report to developers.");
             static ref use_re: Regex = Regex::new(r"^\s*use\s+([[:alpha:]][[:word:]]*)")
                 .expect("This error can be a bug. Please report to developers.");
         }
@@ -115,10 +110,8 @@ impl Build {
                     continue;
                 }
             };
-            if !mod_proc_re.is_match(&line) {
-                for cap in mod_re.captures_iter(&line) {
-                    modules.push(self.get_mod_path(&cap[1]));
-                }
+            if let Some(module) = get_defined_module(&line) {
+                modules.push(self.get_mod_path(&module.0));
             }
 
             for cap in use_re.captures_iter(&line) {
@@ -166,4 +159,53 @@ pub struct Link {
 pub struct Archive {
     pub product: PathBuf,
     pub objects: Vec<PathBuf>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Module(String);
+
+impl Module {
+    pub fn new(name: String) -> Self {
+        Module(name)
+    }
+}
+
+impl From<&str> for Module {
+    fn from(s: &str) -> Self {
+        Module::new(s.to_string())
+    }
+}
+
+pub fn get_defined_module(line: &str) -> Option<Module> {
+    lazy_static! {
+        static ref mod_proc_re: Regex =
+            Regex::new(r"^\s*module\s+procedure\s+([[:alpha:]][[:word:]]*)")
+                .expect("This error can be a bug. Please report to developers.");
+        static ref mod_re: Regex = Regex::new(r"^\s*module\s+([[:alpha:]][[:word:]]*)")
+            .expect("This error can be a bug. Please report to developers.");
+    }
+
+    if mod_proc_re.is_match(line) {
+        return None;
+    }
+
+    mod_re
+        .captures(line)?
+        .get(1)
+        .map(|m| Module::from(m.as_str()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_list_module() {
+        assert_eq!(
+            get_defined_module("module mymod"),
+            Some(Module::from("mymod"))
+        );
+        assert_eq!(get_defined_module("use mymod"), None);
+        assert_eq!(get_defined_module("module procedure myfunc"), None);
+    }
 }
