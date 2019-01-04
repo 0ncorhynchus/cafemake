@@ -88,11 +88,6 @@ impl Build {
     }
 
     fn resolve_dependencies<P: AsRef<Path>>(&self, source: P) -> io::Result<Compile> {
-        lazy_static! {
-            static ref use_re: Regex = Regex::new(r"^\s*use\s+([[:alpha:]][[:word:]]*)")
-                .expect("This error can be a bug. Please report to developers.");
-        }
-
         let mut modules = Vec::new();
         let mut uses = Vec::new();
 
@@ -104,18 +99,19 @@ impl Build {
                     eprintln!(
                         "Warning: An Error has occured while reading a line at {}:{}",
                         source.as_ref().display(),
-                        index
+                        index+1
                     );
                     eprintln!("  {}", err);
                     continue;
                 }
             };
+
             if let Some(module) = get_defined_module(&line) {
                 modules.push(self.get_mod_path(&module.0));
             }
 
-            for cap in use_re.captures_iter(&line) {
-                uses.push(self.get_mod_path(&cap[1]));
+            if let Some(module) = get_used_module(&line) {
+                uses.push(self.get_mod_path(&module.0));
             }
         }
 
@@ -165,7 +161,7 @@ pub struct Archive {
 pub struct Module(String);
 
 impl Module {
-    pub fn new(name: String) -> Self {
+    fn new(name: String) -> Self {
         Module(name)
     }
 }
@@ -176,7 +172,7 @@ impl From<&str> for Module {
     }
 }
 
-pub fn get_defined_module(line: &str) -> Option<Module> {
+fn get_defined_module(line: &str) -> Option<Module> {
     lazy_static! {
         static ref mod_proc_re: Regex =
             Regex::new(r"^\s*module\s+procedure\s+([[:alpha:]][[:word:]]*)")
@@ -195,17 +191,35 @@ pub fn get_defined_module(line: &str) -> Option<Module> {
         .map(|m| Module::from(m.as_str()))
 }
 
+fn get_used_module(line: &str) -> Option<Module> {
+    lazy_static! {
+        static ref use_re: Regex = Regex::new(r"^\s*use\s+([[:alpha:]][[:word:]]*)")
+            .expect("This error can be a bug. Please report to developers.");
+    }
+
+    use_re
+        .captures(line)?
+        .get(1)
+        .map(|m| Module::from(m.as_str()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_list_module() {
+    fn test_get_defined_module() {
         assert_eq!(
             get_defined_module("module mymod"),
             Some(Module::from("mymod"))
         );
         assert_eq!(get_defined_module("use mymod"), None);
         assert_eq!(get_defined_module("module procedure myfunc"), None);
+    }
+
+    #[test]
+    fn test_get_used_module() {
+        assert_eq!(get_used_module("use mymod"), Some(Module::from("mymod")));
+        assert_eq!(get_used_module("module mymod"), None);
     }
 }
