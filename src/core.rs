@@ -107,11 +107,11 @@ impl Build {
             };
 
             if let Some(module) = get_defined_module(&line) {
-                modules.push(self.get_mod_path(&module.0));
+                modules.push(self.get_mod_path(&module));
             }
 
             if let Some(module) = get_used_module(&line) {
-                uses.push(self.get_mod_path(&module.0));
+                uses.push(self.get_mod_path(&module));
             }
         }
 
@@ -157,22 +157,7 @@ pub struct Archive {
     pub objects: Vec<PathBuf>,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Module(String);
-
-impl Module {
-    fn new(name: String) -> Self {
-        Module(name)
-    }
-}
-
-impl From<&str> for Module {
-    fn from(s: &str) -> Self {
-        Module::new(s.to_string())
-    }
-}
-
-fn get_defined_module(line: &str) -> Option<Module> {
+fn get_defined_module(line: &str) -> Option<String> {
     lazy_static! {
         static ref mod_proc_re: Regex =
             Regex::new(r"^\s*module\s+procedure\s+([[:alpha:]][[:word:]]*)")
@@ -188,10 +173,10 @@ fn get_defined_module(line: &str) -> Option<Module> {
     mod_re
         .captures(line)?
         .get(1)
-        .map(|m| Module::from(m.as_str()))
+        .map(|m| String::from(m.as_str()))
 }
 
-fn get_used_module(line: &str) -> Option<Module> {
+fn get_used_module(line: &str) -> Option<String> {
     lazy_static! {
         static ref use_re: Regex = Regex::new(r"^\s*use\s+([[:alpha:]][[:word:]]*)")
             .expect("This error can be a bug. Please report to developers.");
@@ -200,7 +185,7 @@ fn get_used_module(line: &str) -> Option<Module> {
     use_re
         .captures(line)?
         .get(1)
-        .map(|m| Module::from(m.as_str()))
+        .map(|m| String::from(m.as_str()))
 }
 
 #[cfg(test)]
@@ -211,7 +196,7 @@ mod tests {
     fn test_get_defined_module() {
         assert_eq!(
             get_defined_module("module mymod"),
-            Some(Module::from("mymod"))
+            Some(String::from("mymod"))
         );
         assert_eq!(get_defined_module("use mymod"), None);
         assert_eq!(get_defined_module("module procedure myfunc"), None);
@@ -219,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_get_used_module() {
-        assert_eq!(get_used_module("use mymod"), Some(Module::from("mymod")));
+        assert_eq!(get_used_module("use mymod"), Some(String::from("mymod")));
         assert_eq!(get_used_module("module mymod"), None);
     }
 }
