@@ -33,7 +33,7 @@ impl Build {
         self.variables.push((String::from(name), value));
     }
 
-    pub fn from_config(config: &Config) -> io::Result<Self> {
+    pub fn try_from_config(config: &Config) -> io::Result<Self> {
         let mut build = Self::new();
 
         build.push_variables(

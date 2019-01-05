@@ -42,7 +42,7 @@ fn main() -> std::result::Result<(), config::ConfigError> {
 
     let config = Config::load(DEFAULT_INPUT_FILE)?;
 
-    let build = Build::from_config(&config)?;
+    let build = Build::try_from_config(&config)?;
 
     build_system.write_build(&build)?;
     build_system.build()?;
