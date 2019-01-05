@@ -53,12 +53,23 @@ impl Build {
         build.push_variables("ar", String::from("ar"));
         build.push_variables("install_prefix", String::from("/usr/local"));
 
+        let mut main_sources = Vec::new();
         let mut sources = Vec::new();
         visit_dirs(build.source_dir.clone(), &mut |path| {
+            let mut is_main = false;
+            if let Some(fstem) = path.file_stem() {
+                if let Some(fstem) = fstem.to_str() {
+                    is_main = fstem == "main";
+                }
+            }
             if let Some(ext) = path.extension() {
                 if let Some(ext) = ext.to_str() {
                     if ext.to_lowercase().starts_with("f") {
-                        sources.push(path)
+                        if is_main {
+                            main_sources.push(path);
+                        } else {
+                            sources.push(path);
+                        }
                     }
                 }
             }
@@ -68,10 +79,33 @@ impl Build {
             build.compiles.push(build.resolve_dependencies(source)?);
         }
 
+        let archive_path = build
+            .build_dir
+            .join(&config.package.name)
+            .with_extension("a");
+        build.archives.push(Archive {
+            product: archive_path.clone(),
+            objects: build
+                .compiles
+                .iter()
+                .map(|compile| compile.object.clone())
+                .collect(),
+        });
+
+        let mut main_objects = Vec::with_capacity(main_sources.len());
+        for source in &main_sources {
+            let object = build.resolve_dependencies(source)?;
+            main_objects.push(object.clone());
+            build.compiles.push(object);
+        }
+
         build.links.push(Link {
             product: build.build_dir.join(&config.package.name),
-            objects: sources.iter().map(|path| build.get_objpath(path)).collect(),
-            libs: Vec::new(),
+            objects: main_objects
+                .iter()
+                .map(|compile| compile.object.clone())
+                .collect(),
+            libs: vec![archive_path],
         });
 
         Ok(build)
@@ -136,7 +170,7 @@ fn visit_dirs(dir: PathBuf, f: &mut FnMut(PathBuf)) -> io::Result<()> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Compile {
     pub source: PathBuf,
     pub object: PathBuf,
@@ -144,14 +178,14 @@ pub struct Compile {
     pub uses: Vec<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Link {
     pub product: PathBuf,
     pub objects: Vec<PathBuf>,
     pub libs: Vec<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Archive {
     pub product: PathBuf,
     pub objects: Vec<PathBuf>,
